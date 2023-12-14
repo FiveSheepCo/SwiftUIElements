@@ -229,10 +229,7 @@ public struct DictationTextField: View {
     }
 }
 
+@available(macOS 12.0, iOS 15.0, tvOS 16.0, watchOS 8.0, *)
 #Preview {
-    if #available(macOS 12.0, iOS 15.0, tvOS 16.0, watchOS 8.0, *) {
-        DictationTextField("Foo", text: .constant("Bar"))
-    } else {
-        EmptyView()
-    }
+    DictationTextField("Foo", text: .constant("Bar"))
 }
