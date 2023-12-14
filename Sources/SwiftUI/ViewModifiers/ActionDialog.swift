@@ -12,6 +12,7 @@ internal struct ActionDialogViewModifier<InnerContent: View, Actions: View, Item
     private let content: (Item) -> InnerContent
     private let actions: ((Item) -> Actions)?
     private let onDismiss: (() -> Void)?
+    private let showCancelButton: Bool
     
     /// Initializes an action dialog with an `Identifiable` item.
     ///
@@ -21,16 +22,19 @@ internal struct ActionDialogViewModifier<InnerContent: View, Actions: View, Item
     /// - Parameters:
     ///   - item: A binding to an optional `Identifiable` item that controls the presentation of the dialog.
     ///   - onDismiss: A closure that's called when the action dialog is dismissed.
+    ///   - showCancelButton: Whether to show a dedicated cancel button at the bottom.
     ///   - content: A closure that provides the content to be displayed in the dialog.
     ///   - actions: A closure that provides the actions to be displayed at the bottom of the dialog.
     init(
         item: Binding<Item?>,
-        onDismiss: (() -> Void)? = nil,
+        onDismiss: (() -> Void)?,
+        showCancelButton: Bool,
         content: @escaping (Item) -> InnerContent,
         actions: ((Item) -> Actions)?
     ) where Item: Identifiable {
         self._item = item
         self.onDismiss = onDismiss
+        self.showCancelButton = showCancelButton
         self.content = content
         self.actions = actions
     }
@@ -44,11 +48,13 @@ internal struct ActionDialogViewModifier<InnerContent: View, Actions: View, Item
     /// - Parameters:
     ///   - isPresented: A binding to a Boolean value that indicates whether the dialog is currently presented.
     ///   - onDismiss: A closure that's called when the action dialog is dismissed.
+    ///   - showCancelButton: Whether to show a dedicated cancel button at the bottom.
     ///   - content: A closure that provides the content to be displayed in the dialog.
     ///   - actions: A closure that provides the actions to be displayed at the bottom of the dialog.
     init(
         isPresented: Binding<Bool>,
-        onDismiss: (() -> Void)? = nil,
+        onDismiss: (() -> Void)?,
+        showCancelButton: Bool,
         @ViewBuilder content: @escaping () -> InnerContent,
         actions: (() -> Actions)?
     ) where Item == Bool {
@@ -57,6 +63,7 @@ internal struct ActionDialogViewModifier<InnerContent: View, Actions: View, Item
             reverse: { $0 ?? false }
         )
         self.onDismiss = onDismiss
+        self.showCancelButton = showCancelButton
         self.content = { _ in content() }
         if let actions {
             self.actions = { _ in actions() }
@@ -130,25 +137,27 @@ internal struct ActionDialogViewModifier<InnerContent: View, Actions: View, Item
                             }
                             
                             // Cancel button
-                            Button(role: .cancel) {
-                                withAnimation {
-                                    self.item = nil
+                            if showCancelButton {
+                                Button(role: .cancel) {
+                                    withAnimation {
+                                        self.item = nil
+                                    }
+                                    self.onDismiss?()
+                                } label: {
+                                    Text(NSLocalizedString("Cancel", comment: "Cancel button"))
+                                        .padding()
+                                        .frame(maxWidth: .infinity)
                                 }
-                                self.onDismiss?()
-                            } label: {
-                                Text(NSLocalizedString("Cancel", comment: "Cancel button"))
-                                    .padding()
-                                    .frame(maxWidth: .infinity)
+                                // Workaround to set background with a clipping shape
+                                // without causing it to clip under the safe area.
+                                .background {
+                                    Color.clear
+                                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                        .background(.regularMaterial)
+                                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                                }
                             }
-                            // Workaround to set background with a clipping shape
-                            // without causing it to clip under the safe area.
-                            .background {
-                                Color.clear
-                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                    .background(.regularMaterial)
-                                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                            }
-                        }
+                        } // VStack
                         .padding(.horizontal, 4)
                         .padding(.bottom, 4)
                         .transition(transition)
@@ -172,11 +181,13 @@ public extension View {
     /// - Parameters:
     ///   - isPresented: A binding to a Boolean value that indicates whether the dialog is currently presented.
     ///   - onDismiss: A closure that's called when the action dialog is dismissed.
+    ///   - showCancelButton: Whether to show a dedicated cancel button at the bottom.
     ///   - content: A closure that provides the content to be displayed in the dialog.
     ///   - actions: A closure that provides the actions to be displayed at the bottom of the dialog.
     func actionDialog<Content: View, Actions: View>(
         isPresented: Binding<Bool>,
         onDismiss: (() -> Void)? = nil,
+        showCancelButton: Bool = false,
         @ViewBuilder content: @escaping () -> Content,
         @ViewBuilder actions: @escaping () -> Actions
     ) -> some View {
@@ -184,6 +195,7 @@ public extension View {
             ActionDialogViewModifier(
                 isPresented: isPresented,
                 onDismiss: onDismiss,
+                showCancelButton: showCancelButton,
                 content: content,
                 actions: actions
             )
@@ -198,16 +210,19 @@ public extension View {
     /// - Parameters:
     ///   - isPresented: A binding to a Boolean value that indicates whether the dialog is currently presented.
     ///   - onDismiss: A closure that's called when the action dialog is dismissed.
+    ///   - showCancelButton: Whether to show a dedicated cancel button at the bottom.
     ///   - content: A closure that provides the content to be displayed in the dialog.
     func actionDialog<Content: View>(
         isPresented: Binding<Bool>,
         onDismiss: (() -> Void)? = nil,
+        showCancelButton: Bool = false,
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
         self.modifier(
             ActionDialogViewModifier<Content, AnyView, Bool>(
                 isPresented: isPresented,
                 onDismiss: onDismiss,
+                showCancelButton: showCancelButton,
                 content: content,
                 actions: nil
             )
@@ -222,11 +237,13 @@ public extension View {
     /// - Parameters:
     ///   - item: A binding to an optional `Identifiable` item that controls the presentation of the dialog.
     ///   - onDismiss: A closure that's called when the action dialog is dismissed.
+    ///   - showCancelButton: Whether to show a dedicated cancel button at the bottom.
     ///   - content: A closure that provides the content to be displayed in the dialog, based on the item.
     ///   - actions: A closure that provides the actions to be displayed at the bottom of the dialog.
     func actionDialog<Content: View, Actions: View, Item: Identifiable>(
         item: Binding<Item?>,
         onDismiss: (() -> Void)? = nil,
+        showCancelButton: Bool = false,
         @ViewBuilder content: @escaping (Item) -> Content,
         @ViewBuilder actions: @escaping (Item) -> Actions
     ) -> some View {
@@ -234,6 +251,7 @@ public extension View {
             ActionDialogViewModifier(
                 item: item,
                 onDismiss: onDismiss,
+                showCancelButton: showCancelButton,
                 content: content,
                 actions: actions
             )
@@ -248,16 +266,19 @@ public extension View {
     /// - Parameters:
     ///   - item: A binding to an optional `Identifiable` item that controls the presentation of the dialog.
     ///   - onDismiss: A closure that's called when the action dialog is dismissed.
+    ///   - showCancelButton: Whether to show a dedicated cancel button at the bottom.
     ///   - content: A closure that provides the content to be displayed in the dialog, based on the item.
     func actionDialog<Content: View, Item: Identifiable>(
         item: Binding<Item?>,
         onDismiss: (() -> Void)? = nil,
+        showCancelButton: Bool = false,
         @ViewBuilder content: @escaping (Item) -> Content
     ) -> some View {
         self.modifier(
             ActionDialogViewModifier<Content, AnyView, Item>(
                 item: item,
                 onDismiss: onDismiss,
+                showCancelButton: showCancelButton,
                 content: content,
                 actions: nil
             )
@@ -266,7 +287,62 @@ public extension View {
 }
 
 @available(iOS 15.0, macOS 12.0, *)
-struct PreviewView: View {
+private struct PreviewView: View {
+    @State private var isOn = false
+    
+    let showCancelButton: Bool
+    
+    init(showCancelButton: Bool = true) {
+        self.showCancelButton = showCancelButton
+    }
+    
+    var body: some View {
+        TabView {
+            VStack {
+                Button {
+                    isOn = true
+                } label: {
+                    Text("Show action dialog")
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .actionDialog(isPresented: $isOn, showCancelButton: showCancelButton) {
+                VStack(alignment: .leading) {
+                    Text("Action Dialog").bold()
+                    Toggle("Supports any component", isOn: .constant(true))
+                }
+            } actions: {
+                if showCancelButton {
+                    Button {} label: {
+                        Text("Save")
+                            .frame(maxWidth: .infinity)
+                    }
+                } else {
+                    HStack {
+                        Button(role: .cancel) {
+                            isOn = false
+                        } label: {
+                            Text("No")
+                                .frame(maxWidth: .infinity)
+                        }
+                        Button {
+                            isOn = false
+                        } label: {
+                            Text("Yes")
+                                .frame(maxWidth: .infinity)
+                        }
+                    }
+                }
+            }
+            .tabItem {
+                Label("Preview", systemImage: "house")
+            }
+        }
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, *)
+private struct PreviewView2: View {
     @State private var isOn = false
     
     var body: some View {
@@ -279,15 +355,48 @@ struct PreviewView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .actionDialog(isPresented: $isOn) {
+            .actionDialog(isPresented: $isOn, showCancelButton: false) {
                 VStack(alignment: .leading) {
                     Text("Action Dialog").bold()
                     Toggle("Supports any component", isOn: .constant(true))
                 }
-            } actions: {
-                Button {} label: {
-                    Text("Save")
-                        .frame(maxWidth: .infinity)
+                Spacer().frame(maxHeight: 24)
+                VStack {
+                    HStack(spacing: 16) {
+                        Image(systemName: "checkmark")
+                            .foregroundStyle(.white)
+                            .frame(width: 48, height: 48)
+                            .background(Color.green)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                        VStack(alignment: .leading) {
+                            Text("Foo").bold()
+                            Text("Lorem ipsum dolor sit amet")
+                        }
+                        .foregroundStyle(.primary)
+                        Spacer()
+                    }
+                    .padding()
+                    .background(Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .frame(maxWidth: .infinity)
+                    
+                    HStack(spacing: 16) {
+                        Image(systemName: "x.circle.fill")
+                            .foregroundStyle(.white)
+                            .frame(width: 48, height: 48)
+                            .background(Color.red)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                        VStack(alignment: .leading) {
+                            Text("Bar").bold()
+                            Text("Lorem ipsum dolor sit amet")
+                        }
+                        .foregroundStyle(.primary)
+                        Spacer()
+                    }
+                    .padding()
+                    .background(Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .frame(maxWidth: .infinity)
                 }
             }
             .tabItem {
@@ -298,6 +407,16 @@ struct PreviewView: View {
 }
 
 @available(iOS 15.0, macOS 12.0, *)
-#Preview {
+#Preview("Default") {
     PreviewView()
+}
+
+@available(iOS 15.0, macOS 12.0, *)
+#Preview("No cancel button") {
+    PreviewView(showCancelButton: false)
+}
+
+@available(iOS 15.0, macOS 12.0, *)
+#Preview("Custom style") {
+    PreviewView2()
 }
