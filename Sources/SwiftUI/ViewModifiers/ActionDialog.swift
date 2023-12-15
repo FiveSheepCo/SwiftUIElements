@@ -21,7 +21,7 @@ public enum ActionDialogDismissKind {
 ///
 /// This view displays an overlay and a customizable content area. It appears with a transition
 /// animation and can be dismissed by tapping the overlay or pressing a cancel button.
-@available(iOS 15.0, macOS 12.0, *)
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 internal struct ActionDialogViewModifier<InnerContent: View, Actions: View, Item>: ViewModifier {
     
     @Binding
@@ -90,7 +90,7 @@ internal struct ActionDialogViewModifier<InnerContent: View, Actions: View, Item
     }
     
     var transition: AnyTransition {
-        if #available(iOS 16.0, macOS 13.0, *) {
+        if #available(iOS 16.0, tvOS 16.0, watchOS 9.0, macOS 13.0, *) {
             AnyTransition.asymmetric(insertion: .push(from: .bottom), removal: .push(from: .top))
         } else {
             AnyTransition.scale
@@ -105,6 +105,31 @@ internal struct ActionDialogViewModifier<InnerContent: View, Actions: View, Item
         self.onDismiss?()
     }
     
+    @ViewBuilder
+    var sheetBackground: some View {
+        if #available(watchOS 10.0, *) {
+            Color.clear
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(.regularMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+        } else {
+            Color.clear
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.clear)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+    
+    @ViewBuilder
+    var dimBackground: some View {
+        Color.black
+            .ignoresSafeArea(.all, edges: .all)
+            .opacity(0.7)
+            .frame(maxHeight: .infinity)
+            .contentShape(Rectangle())
+            .transition(.opacity)
+    }
+    
     public func body(content: Content) -> some View {
         content
             .disabled(self.item != nil)
@@ -117,15 +142,14 @@ internal struct ActionDialogViewModifier<InnerContent: View, Actions: View, Item
                     
                     // Overlay
                     if item != nil {
-                        Color.black
-                            .ignoresSafeArea(.all, edges: .all)
-                            .opacity(0.7)
-                            .onTapGesture {
-                                dismiss(.tapBackground)
-                            }
-                            .frame(maxHeight: .infinity)
-                            .contentShape(Rectangle())
-                            .transition(.opacity)
+                        if #available(tvOS 16.0, *) {
+                            dimBackground
+                                .onTapGesture {
+                                    dismiss(.tapBackground)
+                                }
+                        } else {
+                            dimBackground
+                        }
                     }
                     
                     // Content area
@@ -152,10 +176,7 @@ internal struct ActionDialogViewModifier<InnerContent: View, Actions: View, Item
                             // Workaround to set background with a clipping shape
                             // without causing it to clip under the safe area.
                             .background {
-                                Color.clear
-                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                    .background(.regularMaterial)
-                                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                                sheetBackground
                             }
                             
                             // Cancel button
@@ -170,10 +191,7 @@ internal struct ActionDialogViewModifier<InnerContent: View, Actions: View, Item
                                 // Workaround to set background with a clipping shape
                                 // without causing it to clip under the safe area.
                                 .background {
-                                    Color.clear
-                                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                        .background(.regularMaterial)
-                                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                                    sheetBackground
                                 }
                             }
                         } // VStack
@@ -189,7 +207,7 @@ internal struct ActionDialogViewModifier<InnerContent: View, Actions: View, Item
 }
 
 
-@available(iOS 15.0, macOS 12.0, *)
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 public extension View {
     
     /// Initializes an action dialog with a Boolean binding.
@@ -305,7 +323,7 @@ public extension View {
     }
 }
 
-@available(iOS 15.0, macOS 12.0, *)
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 public extension View {
     
     /// Initializes an action sheet with a Boolean binding.
@@ -363,7 +381,7 @@ public extension View {
     }
 }
 
-@available(iOS 15.0, macOS 12.0, *)
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 private struct PreviewView: View {
     @State private var isOn = false
     
@@ -421,7 +439,7 @@ private struct PreviewView: View {
     }
 }
 
-@available(iOS 15.0, macOS 12.0, *)
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 private struct PreviewView2: View {
     @State private var isOn = false
     
@@ -486,17 +504,17 @@ private struct PreviewView2: View {
     }
 }
 
-@available(iOS 15.0, macOS 12.0, *)
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 #Preview("Default") {
     PreviewView()
 }
 
-@available(iOS 15.0, macOS 12.0, *)
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 #Preview("No cancel button") {
     PreviewView(showCancelButton: false)
 }
 
-@available(iOS 15.0, macOS 12.0, *)
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 #Preview("Custom style") {
     PreviewView2()
 }
