@@ -1,5 +1,22 @@
 import SwiftUI
 
+/// Represents the methods for dismissing an action dialog in a user interface.
+///
+/// This enum provides options to specify how an action dialog can be dismissed, enhancing the flexibility
+/// and user experience of dialog interactions.
+public enum ActionDialogDismissKind {
+    
+    /// Dismiss the dialog by tapping the background overlay.
+    /// This case represents the scenario where a user taps outside the dialog content, typically on a dimmed or
+    /// semi-transparent overlay, to close the dialog.
+    case tapBackground
+
+    /// Dismiss the dialog using a dedicated cancel button.
+    /// This case is used when the dialog should be closed as a result of the user interacting with a cancel
+    /// button explicitly provided as part of the dialog's interface.
+    case cancelButton
+}
+
 /// A SwiftUI component that presents a custom action dialog with dynamic content.
 ///
 /// This view displays an overlay and a customizable content area. It appears with a transition
@@ -12,7 +29,7 @@ internal struct ActionDialogViewModifier<InnerContent: View, Actions: View, Item
     private let content: (Item) -> InnerContent
     private let actions: ((Item) -> Actions)?
     private let onDismiss: (() -> Void)?
-    private let showCancelButton: Bool
+    private let dismissKinds: Set<ActionDialogDismissKind>
     
     /// Initializes an action dialog with an `Identifiable` item.
     ///
@@ -21,20 +38,20 @@ internal struct ActionDialogViewModifier<InnerContent: View, Actions: View, Item
     ///
     /// - Parameters:
     ///   - item: A binding to an optional `Identifiable` item that controls the presentation of the dialog.
+    ///   - dismiss: A set of methods to dismiss the dialog.
     ///   - onDismiss: A closure that's called when the action dialog is dismissed.
-    ///   - showCancelButton: Whether to show a dedicated cancel button at the bottom.
     ///   - content: A closure that provides the content to be displayed in the dialog.
     ///   - actions: A closure that provides the actions to be displayed at the bottom of the dialog.
     init(
         item: Binding<Item?>,
+        dismiss: Set<ActionDialogDismissKind>,
         onDismiss: (() -> Void)?,
-        showCancelButton: Bool,
         content: @escaping (Item) -> InnerContent,
         actions: ((Item) -> Actions)?
     ) where Item: Identifiable {
         self._item = item
         self.onDismiss = onDismiss
-        self.showCancelButton = showCancelButton
+        self.dismissKinds = dismiss
         self.content = content
         self.actions = actions
     }
@@ -47,14 +64,14 @@ internal struct ActionDialogViewModifier<InnerContent: View, Actions: View, Item
     ///
     /// - Parameters:
     ///   - isPresented: A binding to a Boolean value that indicates whether the dialog is currently presented.
+    ///   - dismiss: A set of methods to dismiss the dialog.
     ///   - onDismiss: A closure that's called when the action dialog is dismissed.
-    ///   - showCancelButton: Whether to show a dedicated cancel button at the bottom.
     ///   - content: A closure that provides the content to be displayed in the dialog.
     ///   - actions: A closure that provides the actions to be displayed at the bottom of the dialog.
     init(
         isPresented: Binding<Bool>,
+        dismiss: Set<ActionDialogDismissKind>,
         onDismiss: (() -> Void)?,
-        showCancelButton: Bool,
         @ViewBuilder content: @escaping () -> InnerContent,
         actions: (() -> Actions)?
     ) where Item == Bool {
@@ -63,7 +80,7 @@ internal struct ActionDialogViewModifier<InnerContent: View, Actions: View, Item
             reverse: { $0 ?? false }
         )
         self.onDismiss = onDismiss
-        self.showCancelButton = showCancelButton
+        self.dismissKinds = dismiss
         self.content = { _ in content() }
         if let actions {
             self.actions = { _ in actions() }
@@ -80,10 +97,18 @@ internal struct ActionDialogViewModifier<InnerContent: View, Actions: View, Item
         }
     }
     
+    func dismiss(_ requiredKind: ActionDialogDismissKind) {
+        guard dismissKinds.contains(requiredKind) else { return }
+        withAnimation {
+            self.item = nil
+        }
+        self.onDismiss?()
+    }
+    
     public func body(content: Content) -> some View {
         content
             .disabled(self.item != nil)
-            .overlay {
+            .overlay(alignment: .bottom) {
                 
                 // The setup here might be a bit strange.
                 // We need to handle transitions specifically for the content,
@@ -96,10 +121,7 @@ internal struct ActionDialogViewModifier<InnerContent: View, Actions: View, Item
                             .ignoresSafeArea(.all, edges: .all)
                             .opacity(0.7)
                             .onTapGesture {
-                                withAnimation {
-                                    self.item = nil
-                                }
-                                self.onDismiss?()
+                                dismiss(.tapBackground)
                             }
                             .frame(maxHeight: .infinity)
                             .contentShape(Rectangle())
@@ -137,12 +159,9 @@ internal struct ActionDialogViewModifier<InnerContent: View, Actions: View, Item
                             }
                             
                             // Cancel button
-                            if showCancelButton {
+                            if dismissKinds.contains(.cancelButton) {
                                 Button(role: .cancel) {
-                                    withAnimation {
-                                        self.item = nil
-                                    }
-                                    self.onDismiss?()
+                                    dismiss(.cancelButton)
                                 } label: {
                                     Text(NSLocalizedString("Cancel", comment: "Cancel button"))
                                         .padding()
@@ -180,22 +199,22 @@ public extension View {
     ///
     /// - Parameters:
     ///   - isPresented: A binding to a Boolean value that indicates whether the dialog is currently presented.
+    ///   - dismiss: A set of methods to dismiss the dialog.
     ///   - onDismiss: A closure that's called when the action dialog is dismissed.
-    ///   - showCancelButton: Whether to show a dedicated cancel button at the bottom.
     ///   - content: A closure that provides the content to be displayed in the dialog.
     ///   - actions: A closure that provides the actions to be displayed at the bottom of the dialog.
     func actionDialog<Content: View, Actions: View>(
         isPresented: Binding<Bool>,
+        dismiss: Set<ActionDialogDismissKind> = [.cancelButton, .tapBackground],
         onDismiss: (() -> Void)? = nil,
-        showCancelButton: Bool = false,
         @ViewBuilder content: @escaping () -> Content,
         @ViewBuilder actions: @escaping () -> Actions
     ) -> some View {
         self.modifier(
             ActionDialogViewModifier(
                 isPresented: isPresented,
+                dismiss: dismiss,
                 onDismiss: onDismiss,
-                showCancelButton: showCancelButton,
                 content: content,
                 actions: actions
             )
@@ -209,20 +228,20 @@ public extension View {
     ///
     /// - Parameters:
     ///   - isPresented: A binding to a Boolean value that indicates whether the dialog is currently presented.
+    ///   - dismiss: A set of methods to dismiss the dialog.
     ///   - onDismiss: A closure that's called when the action dialog is dismissed.
-    ///   - showCancelButton: Whether to show a dedicated cancel button at the bottom.
     ///   - content: A closure that provides the content to be displayed in the dialog.
     func actionDialog<Content: View>(
         isPresented: Binding<Bool>,
+        dismiss: Set<ActionDialogDismissKind> = [.cancelButton, .tapBackground],
         onDismiss: (() -> Void)? = nil,
-        showCancelButton: Bool = false,
         @ViewBuilder content: @escaping () -> Content
     ) -> some View {
         self.modifier(
             ActionDialogViewModifier<Content, AnyView, Bool>(
                 isPresented: isPresented,
+                dismiss: dismiss,
                 onDismiss: onDismiss,
-                showCancelButton: showCancelButton,
                 content: content,
                 actions: nil
             )
@@ -236,22 +255,22 @@ public extension View {
     ///
     /// - Parameters:
     ///   - item: A binding to an optional `Identifiable` item that controls the presentation of the dialog.
+    ///   - dismiss: A set of methods to dismiss the dialog.
     ///   - onDismiss: A closure that's called when the action dialog is dismissed.
-    ///   - showCancelButton: Whether to show a dedicated cancel button at the bottom.
     ///   - content: A closure that provides the content to be displayed in the dialog, based on the item.
     ///   - actions: A closure that provides the actions to be displayed at the bottom of the dialog.
     func actionDialog<Content: View, Actions: View, Item: Identifiable>(
         item: Binding<Item?>,
+        dismiss: Set<ActionDialogDismissKind> = [.cancelButton, .tapBackground],
         onDismiss: (() -> Void)? = nil,
-        showCancelButton: Bool = false,
         @ViewBuilder content: @escaping (Item) -> Content,
         @ViewBuilder actions: @escaping (Item) -> Actions
     ) -> some View {
         self.modifier(
             ActionDialogViewModifier(
                 item: item,
+                dismiss: dismiss,
                 onDismiss: onDismiss,
-                showCancelButton: showCancelButton,
                 content: content,
                 actions: actions
             )
@@ -265,20 +284,78 @@ public extension View {
     ///
     /// - Parameters:
     ///   - item: A binding to an optional `Identifiable` item that controls the presentation of the dialog.
+    ///   - dismiss: A set of methods to dismiss the dialog.
     ///   - onDismiss: A closure that's called when the action dialog is dismissed.
-    ///   - showCancelButton: Whether to show a dedicated cancel button at the bottom.
     ///   - content: A closure that provides the content to be displayed in the dialog, based on the item.
     func actionDialog<Content: View, Item: Identifiable>(
         item: Binding<Item?>,
+        dismiss: Set<ActionDialogDismissKind> = [.cancelButton, .tapBackground],
         onDismiss: (() -> Void)? = nil,
-        showCancelButton: Bool = false,
         @ViewBuilder content: @escaping (Item) -> Content
     ) -> some View {
         self.modifier(
             ActionDialogViewModifier<Content, AnyView, Item>(
                 item: item,
+                dismiss: dismiss,
                 onDismiss: onDismiss,
-                showCancelButton: showCancelButton,
+                content: content,
+                actions: nil
+            )
+        )
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, *)
+public extension View {
+    
+    /// Initializes an action sheet with a Boolean binding.
+    ///
+    /// This initializer is a convenience for cases where the sheet's visibility is controlled by a Boolean flag.
+    /// The builtin means of closing the action sheet will set the flag back to false.
+    ///
+    /// - Parameters:
+    ///   - isPresented: A binding to a Boolean value that indicates whether the sheet is currently presented.
+    ///   - canDismiss: Whether the sheet can be dismissed by tapping outside of its area.
+    ///   - onDismiss: A closure that's called when the action sheet is dismissed.
+    ///   - content: A closure that provides the content to be displayed in the sheet.
+    func simpleActionDialog<Content: View>(
+        isPresented: Binding<Bool>,
+        canDismiss: Bool = true,
+        onDismiss: (() -> Void)? = nil,
+        @ViewBuilder content: @escaping () -> Content
+    ) -> some View {
+        self.modifier(
+            ActionDialogViewModifier<Content, AnyView, Bool>(
+                isPresented: isPresented,
+                dismiss: canDismiss ? [.tapBackground] : [],
+                onDismiss: onDismiss,
+                content: content,
+                actions: nil
+            )
+        )
+    }
+    
+    /// Initializes an action sheet with an `Identifiable` item.
+    ///
+    /// The sheet is presented when the item is some value, and dismissed when set to nil.
+    /// The builtin means of closing the action sheet will set the item back to nil.
+    ///
+    /// - Parameters:
+    ///   - item: A binding to an optional `Identifiable` item that controls the presentation of the sheet.
+    ///   - dismiss: A set of methods to dismiss the sheet.
+    ///   - onDismiss: A closure that's called when the action sheet is dismissed.
+    ///   - content: A closure that provides the content to be displayed in the sheet, based on the item.
+    func simpleActionDialog<Content: View, Item: Identifiable>(
+        item: Binding<Item?>,
+        canDismiss: Bool = true,
+        onDismiss: (() -> Void)? = nil,
+        @ViewBuilder content: @escaping (Item) -> Content
+    ) -> some View {
+        self.modifier(
+            ActionDialogViewModifier<Content, AnyView, Item>(
+                item: item,
+                dismiss: canDismiss ? [.tapBackground] : [],
+                onDismiss: onDismiss,
                 content: content,
                 actions: nil
             )
@@ -306,7 +383,10 @@ private struct PreviewView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .actionDialog(isPresented: $isOn, showCancelButton: showCancelButton) {
+            .actionDialog(
+                isPresented: $isOn,
+                dismiss: Set((showCancelButton ? [.cancelButton] : []) + [.tapBackground])
+            ) {
                 VStack(alignment: .leading) {
                     Text("Action Dialog").bold()
                     Toggle("Supports any component", isOn: .constant(true))
@@ -355,7 +435,7 @@ private struct PreviewView2: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .actionDialog(isPresented: $isOn, showCancelButton: false) {
+            .simpleActionDialog(isPresented: $isOn) {
                 VStack(alignment: .leading) {
                     Text("Action Dialog").bold()
                     Toggle("Supports any component", isOn: .constant(true))
