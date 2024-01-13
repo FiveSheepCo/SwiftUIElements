@@ -20,7 +20,7 @@ public extension View {
         timeInterval: TimeInterval,
         delayStartBy startDelay: TimeInterval? = nil,
         fireImmediately: Bool = false,
-        action: @escaping @Sendable (Timer) -> Void
+        @_inheritActorContext action: @escaping (Timer) -> Void
     ) -> Self {
         
         // Instantiate the timer
