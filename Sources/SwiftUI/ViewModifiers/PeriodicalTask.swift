@@ -1,5 +1,15 @@
 import SwiftUI
 
+public class PeriodicalTask {
+    fileprivate let id: UUID = UUID()
+    fileprivate var isCanceled: Bool = false
+    
+    /// Cancel the periodical task.
+    public func cancel() {
+        self.isCanceled = true
+    }
+}
+
 public extension View {
     
     /// Schedules a periodical task to be executed with a specified time interval.
@@ -20,26 +30,46 @@ public extension View {
         timeInterval: TimeInterval,
         delayStartBy startDelay: TimeInterval? = nil,
         fireImmediately: Bool = false,
-        @_inheritActorContext action: @escaping (Timer) -> Void
+        @_inheritActorContext action: @escaping (PeriodicalTask) async -> Void
     ) -> Self {
         
+        // Instantiate the periodical task
+        let periodicalTask = PeriodicalTask()
+        
         // Instantiate the timer
-        let timer = Timer(timeInterval: timeInterval, repeats: true, block: action)
+        let timer = Timer(timeInterval: timeInterval, repeats: true, block: { timer in
+            
+            // Invalidate the timer if the periodical task is cancelled
+            if periodicalTask.isCanceled {
+                timer.invalidate()
+                return
+            }
+            
+            // Call the action
+            Task {
+                await action(periodicalTask)
+            }
+        })
+        
+        // Schedule timers on the current run loop
         let runLoop = RunLoop.current
         
         if fireImmediately {
+            
             // Dispatch the action closure immediately
-            runLoop.perform {
-                action(timer)
+            Task {
+                await action(periodicalTask)
             }
         }
         
         if let startDelay {
+            
             // Schedule the timer to be added to the current RunLoop after `startDelay` has passed
             Timer.scheduledTimer(withTimeInterval: startDelay, repeats: false) { _ in
                 runLoop.add(timer, forMode: .common)
             }
         } else {
+            
             // Add the timer to the current RunLoop
             runLoop.add(timer, forMode: .common)
         }
