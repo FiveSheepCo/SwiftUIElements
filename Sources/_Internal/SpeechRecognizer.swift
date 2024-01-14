@@ -1,3 +1,5 @@
+#if INCLUDE_SPEECH_RECOGNITION
+
 import Foundation
 import SwiftUI
 
@@ -208,4 +210,5 @@ actor SpeechRecognizer: ObservableObject {
     }
 }
 
-#endif
+#endif // os(iOS)
+#endif // INCLUDE_SPEECH_RECOGNITION

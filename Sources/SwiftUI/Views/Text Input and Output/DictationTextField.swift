@@ -1,3 +1,5 @@
+#if INCLUDE_SPEECH_RECOGNITION
+
 import SwiftUI
 
 /// Configuration options for ``DictationTextField``.
@@ -233,3 +235,5 @@ public struct DictationTextField: View {
 #Preview {
     DictationTextField("Foo", text: .constant("Bar"))
 }
+
+#endif
