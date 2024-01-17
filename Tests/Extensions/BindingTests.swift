@@ -3,7 +3,7 @@ import SwiftUI
 
 @testable import SwiftUIElements
 
-final class UI__BindingTests: XCTestCase {
+final class BindingTests: XCTestCase {
     
     func testNegation() throws {
         class ViewModel: ObservableObject {
