@@ -33,7 +33,7 @@ public struct IndexedForEach<Data, ID, Content>: View
         ID: Hashable,
         Content: View
 {
-    typealias IndexingKeyPath = KeyPath<Array<AnyIterator<(
+    public typealias IndexingKeyPath = KeyPath<Array<AnyIterator<(
         index: Data.Index, element: Data.Element
     )>.Element>.Element, ID>
     
@@ -41,7 +41,7 @@ public struct IndexedForEach<Data, ID, Content>: View
     private var content: (Data.Index, Data.Element) -> Content
     private var idKeyPath: IndexingKeyPath
     
-    init(
+    public init(
         _ data: Data,
         id: IndexingKeyPath,
         @ViewBuilder content: @escaping (Data.Index, Data.Element) -> Content
