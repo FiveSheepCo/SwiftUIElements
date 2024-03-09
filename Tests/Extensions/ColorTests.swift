@@ -5,7 +5,7 @@ import SwiftUI
 
 final class ColorTests: XCTestCase {
     
-    @available(macOS 14.0, *)
+    @available(iOS 17.0, macOS 14.0, watchOS 10.0, tvOS 17.0, *)
     func testHslInitializer() throws {
         let theta: Float = 0.0001
         var color: Color.Resolved!
