@@ -2,7 +2,7 @@ import Foundation
 import SwiftUI
 
 /// An alert to be presented on top of all navigation hierarchy by a ``.navigationStack`` view modifier.
-struct PresentationStackAlert {
+public struct PresentationStackAlert {
     /// The title.
     let title: LocalizedStringKey
     /// The optional message.

@@ -7,7 +7,7 @@ extension View {
     ///   - stack: The stack of sheets, popovers or full screen covers that are shown.
     ///   - alertStack: The stack of alerts that are shown.
     ///   - content: The view for a specific item of the stack.
-    @ViewBuilder func presentationStack<Element: PresentationStackElement, Content: View>(
+    @ViewBuilder public func presentationStack<Element: PresentationStackElement, Content: View>(
         stack: Binding<[Element]>,
         alertStack: Binding<[PresentationStackAlert]> = .constant([]),
         content: @escaping (Element) -> Content
