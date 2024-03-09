@@ -2,6 +2,11 @@ import Foundation
 import SwiftUI
 
 extension View {
+    /// Adds a view that displays a root view and enables you to present additional views over the root view.
+    /// - Parameters:
+    ///   - stack: The stack of sheets, popovers or full screen covers that are shown.
+    ///   - alertStack: The stack of alerts that are shown.
+    ///   - content: The view for a specific item of the stack.
     @ViewBuilder func presentationStack<Element: PresentationStackElement, Content: View>(
         stack: Binding<[Element]>,
         alertStack: Binding<[PresentationStackAlert]> = .constant([]),
@@ -82,7 +87,7 @@ struct _PresentationStackSupportView<Element: PresentationStackElement, Content:
                 }
             }
             ForEach(Array(alert.actions.enumerated()), id: \.offset) { (offset, action) in
-                if #available(iOS 15.0, macOS 12.0, *) {
+                if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) {
                     Button(action.title, role: action.style.role) {
                         action.handler?(textFieldValues)
                     }
@@ -107,7 +112,7 @@ struct _PresentationStackSupportView<Element: PresentationStackElement, Content:
     
     @ViewBuilder private var fullScreenCoverContent: some View {
         #if os(iOS)
-        if #available(iOS 14.0, *) {
+        if #available(iOS 14.0, watchOS 7.0, tvOS 14.0, *) {
             content
                 .fullScreenCover(isPresented: isFullScreenCoverPresented) { nextSupportView }
         } else {
@@ -115,8 +120,13 @@ struct _PresentationStackSupportView<Element: PresentationStackElement, Content:
                 .sheet(isPresented: isFullScreenCoverPresented) { nextSupportView }
         }
         #else
-        content
-            .sheet(isPresented: isFullScreenCoverPresented) { nextSupportView }
+        if #available(macOS 12.0, *) {
+            content
+                .sheet(isPresented: isFullScreenCoverPresented) { nextSupportView.interactiveDismissDisabled() }
+        } else {
+            content
+                .sheet(isPresented: isFullScreenCoverPresented) { nextSupportView }
+        }
         #endif
     }
     
@@ -128,7 +138,7 @@ struct _PresentationStackSupportView<Element: PresentationStackElement, Content:
     
     var body: some View {
         let alert = alertStack.first
-        if #available(iOS 15.0, macOS 12.0, *) {
+        if #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) {
             presentationContent
                 .alert(alert?.title ?? .init(.empty), isPresented: isAlertPresented) {
                     if let alert {

@@ -2,7 +2,7 @@ import Foundation
 import SwiftUI
 
 extension PresentationStackAlert {
-    /// An action to be used on alert prompts across iOS, tvOS, watchOS and macOS.
+    /// An action to be used on alert prompts.
     public struct Action {
         let title : LocalizedStringKey
         let style : Style
