@@ -21,7 +21,7 @@ public enum ActionDialogDismissKind {
 ///
 /// This view displays an overlay and a customizable content area. It appears with a transition
 /// animation and can be dismissed by tapping the overlay or pressing a cancel button.
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 internal struct ActionDialogViewModifier<InnerContent: View, Actions: View, Item>: ViewModifier {
     
     @Binding
@@ -207,7 +207,7 @@ internal struct ActionDialogViewModifier<InnerContent: View, Actions: View, Item
 }
 
 
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public extension View {
     
     /// Initializes an action dialog with a Boolean binding.
@@ -323,7 +323,7 @@ public extension View {
     }
 }
 
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public extension View {
     
     /// Initializes an action sheet with a Boolean binding.
@@ -381,7 +381,7 @@ public extension View {
     }
 }
 
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct PreviewView: View {
     @State private var isOn = false
     
@@ -439,7 +439,7 @@ private struct PreviewView: View {
     }
 }
 
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct PreviewView2: View {
     @State private var isOn = false
     
@@ -504,17 +504,17 @@ private struct PreviewView2: View {
     }
 }
 
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 #Preview("Default") {
     PreviewView()
 }
 
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 #Preview("No cancel button") {
     PreviewView(showCancelButton: false)
 }
 
-@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 #Preview("Custom style") {
     PreviewView2()
 }

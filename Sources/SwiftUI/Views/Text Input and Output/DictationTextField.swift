@@ -231,7 +231,7 @@ public struct DictationTextField: View {
     }
 }
 
-@available(macOS 12.0, iOS 15.0, tvOS 16.0, watchOS 8.0, *)
+@available(iOS 15.0, macOS 12.0, tvOS 16.0, watchOS 8.0, *)
 #Preview {
     DictationTextField("Foo", text: .constant("Bar"))
 }

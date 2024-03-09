@@ -82,7 +82,7 @@ struct _PresentationStackSupportView<Element: PresentationStackElement, Content:
                 }
             }
             ForEach(Array(alert.actions.enumerated()), id: \.offset) { (offset, action) in
-                if #available(iOS 15.0, *) {
+                if #available(iOS 15.0, macOS 12.0, *) {
                     Button(action.title, role: action.style.role) {
                         action.handler?(textFieldValues)
                     }
@@ -105,16 +105,30 @@ struct _PresentationStackSupportView<Element: PresentationStackElement, Content:
         )
     }
     
-    private var presentationContent: some View {
+    @ViewBuilder private var fullScreenCoverContent: some View {
+        #if os(iOS)
+        if #available(iOS 14.0, *) {
+            content
+                .fullScreenCover(isPresented: isFullScreenCoverPresented) { nextSupportView }
+        } else {
+            content
+                .sheet(isPresented: isFullScreenCoverPresented) { nextSupportView }
+        }
+        #else
         content
+            .sheet(isPresented: isFullScreenCoverPresented) { nextSupportView }
+        #endif
+    }
+    
+    @ViewBuilder private var presentationContent: some View {
+        fullScreenCoverContent
             .sheet(isPresented: isSheetPresented) { nextSupportView }
-            .fullScreenCover(isPresented: isFullScreenCoverPresented) { nextSupportView }
             .popover(isPresented: isPopoverPresented) { nextSupportView }
     }
     
     var body: some View {
         let alert = alertStack.first
-        if #available(iOS 15.0, *) {
+        if #available(iOS 15.0, macOS 12.0, *) {
             presentationContent
                 .alert(alert?.title ?? .init(.empty), isPresented: isAlertPresented) {
                     if let alert {

@@ -13,7 +13,7 @@ extension PresentationStackAlert.Action {
         /// A style that indicates the action might change or delete data.
         case destructive
         
-        @available(iOS 15.0, *)
+        @available(iOS 15.0, macOS 12.0, *)
         var role: SwiftUI.ButtonRole? {
             switch self {
                 case .default: nil
