@@ -22,7 +22,7 @@ public struct PresentationStackAlert {
     ///   - okBlock: The block to be executed when the user taps the default ok action.
     ///   - cancelBlock: The block to be executed when the user taps the default cancel action.
     ///   - additionalActions: Additional actions.
-    init(
+    public init(
         title: LocalizedStringKey,
         message: Text? = nil,
         textFields: [PresentationStackAlert.TextFieldConfiguration] = [],
