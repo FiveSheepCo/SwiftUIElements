@@ -23,7 +23,8 @@ let package = Package(
     targets: [
         .target(
             name: "SwiftUIElements",
-            dependencies: ["FoundationPlus"]
+            dependencies: ["FoundationPlus"],
+            resources: [.process("PrivacyInfo.xcprivacy")]
         ),
         .testTarget(
             name: "SwiftUIElementsTests",
