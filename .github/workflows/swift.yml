@@ -11,7 +11,7 @@ env:
 
 jobs:
   macos:
-    runs-on: macos-13
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v4
     - name: Setup Xcode 16
@@ -24,7 +24,7 @@ jobs:
       run: swift test -v --package-path .
 
   ios:
-    runs-on: macos-13
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v4
     - name: Setup Xcode 16
