@@ -12,7 +12,7 @@ extension View {
     @ViewBuilder public func presentationStack<Element: PresentationStackElement, Content: View>(
         stack: Binding<[Element]>,
         alertStack: Binding<[PresentationStackAlert]> = .constant([]),
-        content: @escaping (Element) -> Content
+        @ViewBuilder content: @escaping (Element) -> Content
     ) -> some View {
         _PresentationStackSupportView(
             index: 0,
