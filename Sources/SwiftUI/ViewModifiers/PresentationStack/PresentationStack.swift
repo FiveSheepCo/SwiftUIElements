@@ -1,6 +1,8 @@
 import Foundation
 import SwiftUI
 
+private enum DummyPresentationStackElement: PresentationStackElement {}
+
 extension View {
     /// Adds a view that displays a root view and enables you to present additional views over the root view.
     /// - Parameters:
@@ -20,6 +22,21 @@ extension View {
             contentBuilder: content
         )
     }
+
+    /// Adds a view that displays a root view and enables you to present alerts over the root view.
+    /// - Parameters:
+    ///   - alertStack: The stack of alerts that are shown.
+    @ViewBuilder public func alertStack(
+        _ stack: Binding<[PresentationStackAlert]>
+    ) -> some View {
+        _PresentationStackSupportView(
+            index: 0,
+            stack: .constant([DummyPresentationStackElement]()),
+            alertStack: stack,
+            content: self,
+            contentBuilder: { _ in }
+        )
+    }
 }
 
 struct _PresentationStackSupportView<Element: PresentationStackElement, Content: View, ContentBuilder: View>: View {
@@ -28,7 +45,21 @@ struct _PresentationStackSupportView<Element: PresentationStackElement, Content:
     @Binding var alertStack: [PresentationStackAlert]
     let content: Content
     let contentBuilder: (Element) -> ContentBuilder
-    
+
+    init(
+        index: Int,
+        stack: Binding<[Element]>,
+        alertStack: Binding<[PresentationStackAlert]>,
+        content: Content,
+        @ViewBuilder contentBuilder: @escaping (Element) -> ContentBuilder
+    ) {
+        self.index = index
+        self._stack = stack
+        self._alertStack = alertStack
+        self.content = content
+        self.contentBuilder = contentBuilder
+    }
+
     private var isSheetPresented: Binding<Bool> {
         .init {
             stack.count > index && stack[index].presentationMode == .sheet
