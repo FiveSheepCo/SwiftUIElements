@@ -30,7 +30,7 @@ public extension View {
         timeInterval: TimeInterval,
         delayStartBy startDelay: TimeInterval? = nil,
         fireImmediately: Bool = false,
-        @_inheritActorContext action: @escaping (PeriodicalTask) async -> Void
+        @_inheritActorContext action: @escaping @Sendable (PeriodicalTask) async -> Void
     ) -> Self {
         
         // Instantiate the periodical task
