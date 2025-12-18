@@ -1,7 +1,7 @@
 import SwiftUI
 
-public extension Binding where Value: ExpressibleByNilLiteral {
-    
+public extension Binding where Value: ExpressibleByNilLiteral & Sendable {
+
     /// Provides a custom nil-coalescing operator for `Binding` types where the bound value is optional and can be
     /// expressed by a nil literal. This operator allows specifying a default value to use when the bound value is nil.
     ///
@@ -18,7 +18,10 @@ public extension Binding where Value: ExpressibleByNilLiteral {
     /// let nonOptionalBinding = optionalText ?? "Default"
     /// ```
     /// Now `nonOptionalBinding` will use "Default" when `optionalText` is nil.
-    static func ??<Wrapped>(binding: Binding<Wrapped?>, defaultValue: Wrapped) -> Binding<Wrapped> where Wrapped? == Value {
+    static func ??<Wrapped>(
+        binding: Binding<Wrapped?>,
+        defaultValue: Wrapped
+    ) -> Binding<Wrapped> where Wrapped? == Value {
         Binding<Wrapped>(
             get: { binding.wrappedValue ?? defaultValue },
             set: { binding.wrappedValue = $0 }

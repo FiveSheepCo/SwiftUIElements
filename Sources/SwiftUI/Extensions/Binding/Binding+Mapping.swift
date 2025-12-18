@@ -1,7 +1,7 @@
 import SwiftUI
 
-public extension Binding {
-    
+public extension Binding where Value: Sendable {
+
     /// Transforms the current `Binding` value to a new type, creating a new `Binding` instance.
     ///
     /// The `map` function allows the conversion of a `Binding` instance of one type (`Value`) to another
@@ -36,7 +36,10 @@ public extension Binding {
     ///     reverse: { String($0) }
     /// )
     /// ```
-    func map<Target>(forward: @escaping (Value) -> Target, reverse: @escaping (Target) -> Value) -> Binding<Target> {
+    func map<Target>(
+        forward: @Sendable @escaping (Value) -> Target,
+        reverse: @Sendable @escaping (Target) -> Value
+    ) -> Binding<Target> {
         Binding<Target>(
             get: {
                 forward(self.wrappedValue)

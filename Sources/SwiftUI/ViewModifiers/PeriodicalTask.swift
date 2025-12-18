@@ -1,11 +1,11 @@
 import SwiftUI
 
-public class PeriodicalTask {
+public class PeriodicalTask: @unchecked Sendable {
     fileprivate let id: UUID = UUID()
-    fileprivate var isCanceled: Bool = false
-    
+    fileprivate private(set) var isCanceled: Bool = false
+
     /// Cancel the periodical task.
-    public func cancel() {
+    @MainActor public func cancel() {
         self.isCanceled = true
     }
 }
@@ -51,9 +51,6 @@ public extension View {
             }
         })
         
-        // Schedule timers on the current run loop
-        let runLoop = RunLoop.current
-        
         if fireImmediately {
             
             // Dispatch the action closure immediately
@@ -65,13 +62,14 @@ public extension View {
         if let startDelay {
             
             // Schedule the timer to be added to the current RunLoop after `startDelay` has passed
-            Timer.scheduledTimer(withTimeInterval: startDelay, repeats: false) { _ in
-                runLoop.add(timer, forMode: .common)
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: UInt64(startDelay) * 1_000_000_000)
+                RunLoop.main.add(timer, forMode: .common)
             }
         } else {
             
             // Add the timer to the current RunLoop
-            runLoop.add(timer, forMode: .common)
+            RunLoop.main.add(timer, forMode: .common)
         }
         
         // Preserve `Self` type

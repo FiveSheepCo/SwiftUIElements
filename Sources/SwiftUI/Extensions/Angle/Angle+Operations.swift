@@ -1,10 +1,11 @@
 import SwiftUI
+import FoundationPlus
 
 public extension Angle {
 
     /// Linearly interpolate between `a` and `b` based on `t`.
     static func lerp(a: Self, b: Self, t: Double) -> Self {
-        Angle(degrees: Double._lerp(a: a.degrees, b: b.degrees, t: t))
+        Angle(degrees: Double.lerp(a: a.degrees, b: b.degrees, t: t))
     }
 
     /// Clamp the `Angle` into the [0, 2π] range (in radians)

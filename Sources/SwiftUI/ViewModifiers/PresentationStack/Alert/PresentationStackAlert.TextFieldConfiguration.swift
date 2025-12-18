@@ -1,5 +1,4 @@
 import Foundation
-import FoundationPlus
 import SwiftUI
 
 extension PresentationStackAlert {
@@ -19,7 +18,7 @@ extension PresentationStackAlert {
          */
         public init(
             placeholder: LocalizedStringKey,
-            initialValue: String = .empty,
+            initialValue: String = "",
             isPassword: Bool = false
         ) {
             self.placeholder = placeholder

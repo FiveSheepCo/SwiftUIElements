@@ -1,14 +1,15 @@
 {
+  "originHash" : "b96d246dcc423b686eb47db2b8aa607b6ade1186f7c5dde57e0dcaf8957e495f",
   "pins" : [
     {
       "identity" : "foundationplus",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/FiveSheepCo/FoundationPlus",
       "state" : {
-        "branch" : "main",
-        "revision" : "086415bf294245fd929237e01f4148aaa523026f"
+        "revision" : "aad3018945339073b4ea98a0af5403af36473e42",
+        "version" : "1.0.0"
       }
     }
   ],
-  "version" : 2
+  "version" : 3
 }
