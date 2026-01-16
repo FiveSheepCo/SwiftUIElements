@@ -4,7 +4,7 @@ private struct GlassEffectContainerViewModifier: ViewModifier {
     let spacing: CGFloat?
 
     func body(content: Content) -> some View {
-        if #available(iOS 26, *) {
+        if #available(iOS 26, macOS 26, *) {
             GlassEffectContainer(spacing: spacing) {
                 content
             }

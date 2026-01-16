@@ -12,7 +12,7 @@ extension View {
     }
 }
 
-@available(iOS 14, *)
+@available(iOS 14, macOS 11, *)
 extension ToolbarContent {
 
     /// Applies a modification to the toolbar content using a closure.
@@ -25,7 +25,7 @@ extension ToolbarContent {
     }
 }
 
-@available(iOS 14, *)
+@available(iOS 14, macOS 11, *)
 extension CustomizableToolbarContent {
 
     /// Applies a modification to the toolbar content using a closure.

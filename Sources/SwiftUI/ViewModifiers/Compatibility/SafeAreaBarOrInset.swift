@@ -1,6 +1,6 @@
 import SwiftUI
 
-@available(iOS 15, *)
+@available(iOS 15, macOS 12, *)
 private struct SafeAreaBarOrInsetViewModifier<InnerView: View>: ViewModifier {
     let edge: VerticalEdge
     let alignment: HorizontalAlignment
@@ -23,7 +23,7 @@ private struct SafeAreaBarOrInsetViewModifier<InnerView: View>: ViewModifier {
     }
 
     func body(content: Content) -> some View {
-        if #available(iOS 26, *), !forceInset {
+        if #available(iOS 26, macOS 26, *), !forceInset {
             content.safeAreaBar(edge: edge, alignment: alignment, spacing: spacing, content: self.innerView)
         } else {
             content.safeAreaInset(edge: edge, alignment: alignment, spacing: spacing, content: self.innerView)
@@ -31,7 +31,7 @@ private struct SafeAreaBarOrInsetViewModifier<InnerView: View>: ViewModifier {
     }
 }
 
-@available(iOS 15, *)
+@available(iOS 15, macOS 12, *)
 extension View {
 
     /// Uses a `safeAreaBar` on iOS 26 and later, and `safeAreaInset` on earlier versions.
