@@ -20,7 +20,7 @@ extension View {
     ///
     /// - Parameters:
     ///   - spacing: The spacing between elements inside the container.
-    func glassEffectContainer(spacing: CGFloat? = nil) -> some View {
+    public func glassEffectContainer(spacing: CGFloat? = nil) -> some View {
         modifier(GlassEffectContainerViewModifier(spacing: spacing))
     }
 }

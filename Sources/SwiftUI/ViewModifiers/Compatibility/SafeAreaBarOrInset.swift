@@ -41,7 +41,7 @@ extension View {
     ///   - alignment: The horizontal alignment of the content within the bar or inset.
     ///   - spacing: The spacing between the content and the edges of the bar or inset.
     ///   - forceInset: A Boolean value that, when set to `true`, forces the use of `safeAreaInset`.
-    func safeAreaBarOrInset<Content: View>(
+    public func safeAreaBarOrInset<Content: View>(
         edge: VerticalEdge,
         alignment: HorizontalAlignment = .center,
         spacing: CGFloat? = nil,
